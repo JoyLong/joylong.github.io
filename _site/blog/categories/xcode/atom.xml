@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: xcode | 代码萝卜]]></title>
-  <link href="http://happyingly.github.io/blog/categories/xcode/atom.xml" rel="self"/>
-  <link href="http://happyingly.github.io/"/>
-  <updated>2015-07-25T21:43:56+08:00</updated>
-  <id>http://happyingly.github.io/</id>
+  <link href="http://joylong.github.io/blog/categories/xcode/atom.xml" rel="self"/>
+  <link href="http://joylong.github.io/"/>
+  <updated>2015-07-25T23:27:18+08:00</updated>
+  <id>http://joylong.github.io/</id>
   <author>
     <name><![CDATA[Joy Long]]></name>
     <email><![CDATA[joylong.ly@gmail.com]]></email>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[好用的xcode插件收集]]></title>
-    <link href="http://happyingly.github.io/blog/2014/08/07/good-xcode-plugin/"/>
+    <link href="http://joylong.github.io/blog/2014/08/07/good-xcode-plugin/"/>
     <updated>2014-08-07T00:46:20+08:00</updated>
-    <id>http://happyingly.github.io/blog/2014/08/07/good-xcode-plugin</id>
+    <id>http://joylong.github.io/blog/2014/08/07/good-xcode-plugin</id>
     <content type="html"><![CDATA[<p>xcode配插件才是真正的利器</p>
 
 <p>现在弄一篇博文专门存档用</p>

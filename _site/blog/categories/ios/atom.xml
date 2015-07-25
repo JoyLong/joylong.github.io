@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: ios | 代码萝卜]]></title>
-  <link href="http://happyingly.github.io/blog/categories/ios/atom.xml" rel="self"/>
-  <link href="http://happyingly.github.io/"/>
-  <updated>2015-07-25T21:43:56+08:00</updated>
-  <id>http://happyingly.github.io/</id>
+  <link href="http://joylong.github.io/blog/categories/ios/atom.xml" rel="self"/>
+  <link href="http://joylong.github.io/"/>
+  <updated>2015-07-25T23:27:18+08:00</updated>
+  <id>http://joylong.github.io/</id>
   <author>
     <name><![CDATA[Joy Long]]></name>
     <email><![CDATA[joylong.ly@gmail.com]]></email>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[iOS中一点有趣的优化]]></title>
-    <link href="http://happyingly.github.io/blog/2015/06/28/ioszhong-yi-dian-you-qu-de-you-hua/"/>
+    <link href="http://joylong.github.io/blog/2015/06/28/ioszhong-yi-dian-you-qu-de-you-hua/"/>
     <updated>2015-06-28T20:53:38+08:00</updated>
-    <id>http://happyingly.github.io/blog/2015/06/28/ioszhong-yi-dian-you-qu-de-you-hua</id>
+    <id>http://joylong.github.io/blog/2015/06/28/ioszhong-yi-dian-you-qu-de-you-hua</id>
     <content type="html"><![CDATA[<h3>iOS中一点有趣的优化</h3>
 
 <p>声明四个数组</p>
@@ -59,9 +59,9 @@ NSLog(@"arr1 = %p, arr2 = %p, arr3 = %p, arr4 = %p", &amp;arr1, &amp;arr2, &amp;
   
   <entry>
     <title type="html"><![CDATA[在自己应用中直接打开app store上的应用页]]></title>
-    <link href="http://happyingly.github.io/blog/2014/08/27/open-appstore-in-app/"/>
+    <link href="http://joylong.github.io/blog/2014/08/27/open-appstore-in-app/"/>
     <updated>2014-08-27T16:56:52+08:00</updated>
-    <id>http://happyingly.github.io/blog/2014/08/27/open-appstore-in-app</id>
+    <id>http://joylong.github.io/blog/2014/08/27/open-appstore-in-app</id>
     <content type="html"><![CDATA[<p>iOS 6中新增了Store Kit</p>
 
 <p>在其中有一个SKStoreProductViewController</p>
@@ -82,9 +82,9 @@ NSLog(@"arr1 = %p, arr2 = %p, arr3 = %p, arr4 = %p", &amp;arr1, &amp;arr2, &amp;
   
   <entry>
     <title type="html"><![CDATA[如何用Accessibility让你的应用可以为盲人服务]]></title>
-    <link href="http://happyingly.github.io/blog/2014/08/24/how-to-make-your-ios-app-accessible/"/>
+    <link href="http://joylong.github.io/blog/2014/08/24/how-to-make-your-ios-app-accessible/"/>
     <updated>2014-08-24T11:56:01+08:00</updated>
-    <id>http://happyingly.github.io/blog/2014/08/24/how-to-make-your-ios-app-accessible</id>
+    <id>http://joylong.github.io/blog/2014/08/24/how-to-make-your-ios-app-accessible</id>
     <content type="html"><![CDATA[<h2>前言</h2>
 
 <p>现在市面上iOS应用非常多，随着苹果设备的普及，很多残障人士也开始使用苹果设备，但是随之而来的问题就是很多应用并不能让他们方便自如的使用。</p>
@@ -393,9 +393,9 @@ NSLog(@"arr1 = %p, arr2 = %p, arr3 = %p, arr4 = %p", &amp;arr1, &amp;arr2, &amp;
   
   <entry>
     <title type="html"><![CDATA[Realm数据库使用介绍]]></title>
-    <link href="http://happyingly.github.io/blog/2014/07/26/realmshu-ju-ku-shi-yong-jie-shao-1/"/>
+    <link href="http://joylong.github.io/blog/2014/07/26/realmshu-ju-ku-shi-yong-jie-shao-1/"/>
     <updated>2014-07-26T15:29:11+08:00</updated>
-    <id>http://happyingly.github.io/blog/2014/07/26/realmshu-ju-ku-shi-yong-jie-shao-1</id>
+    <id>http://joylong.github.io/blog/2014/07/26/realmshu-ju-ku-shi-yong-jie-shao-1</id>
     <content type="html"><![CDATA[<h2>1.背景介绍</h2>
 
 <p>Realm是新出的移动端数据库，可以运行在手机、平板和可穿戴设备之上，其目标是取代CoreData和SQLite数据库。</p>
