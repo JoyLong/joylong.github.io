@@ -1,0 +1,200 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>iOS中一点有趣的优化 - 代码萝卜</title>
+	<meta name="author" content="Joy Long">
+
+	
+	<meta name="description" content="iOS中一点有趣的优化 iOS中一点有趣的优化 声明四个数组 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+NSArray *arr1 = [[NSArray alloc] init]; NSArray *arr2 = [[NSArray alloc] init]; NSArray *arr3 &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="代码萝卜" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://happyingly.github.io/blog/2015/06/28/ioszhong-yi-dian-you-qu-de-you-hua/">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//libs.useso.com/js/jquery/1.7.2/jquery.min.js"></script>
+	<link href='http://fonts.useso.com/css?family=Open+Sans:400italic,400,700' rel='stylesheet' type='text/css'>
+	
+</head>
+
+<script type="text/javascript">
+
+function addBlankTargetForLinks () {
+
+  $('a[href^="http"]').each(function(){
+
+      $(this).attr('target', '_blank');
+
+  });
+
+}
+
+$(document).bind('DOMNodeInserted', function(event) {
+
+  addBlankTargetForLinks();
+
+});
+
+</script>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">	
+	<script src="/javascripts/md5.js"></script>
+	<script type="text/javascript">
+		document.write("<img src='http://www.gravatar.com/avatar/" + MD5("joylong.ly@gmail.com") + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+	</script>
+</div>
+<h1><a href="/">代码萝卜</a></h1>
+<p class="subtitle">Joy's coding life.</p>
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">首页Home</a></li>
+    <li><a href="/blog/categories/">分类Categories</a></li>
+    <li><a href="/blog/archives">归档Archives</a></li>
+    <li><a href="/blog/aboutme.html">关于About</a></li>
+</ul></nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+</nav>
+
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">iOS中一点有趣的优化</h1>
+	<div class="entry-content" itemprop="articleBody"><h3>iOS中一点有趣的优化</h3>
+
+<p>声明四个数组</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>NSArray *arr1 = [[NSArray alloc] init];
+</span><span class='line'>
+</span><span class='line'>NSArray *arr2 = [[NSArray alloc] init];
+</span><span class='line'>
+</span><span class='line'>NSArray *arr3 = [[NSArray alloc] init];
+</span><span class='line'>
+</span><span class='line'>NSArray *arr3 = [[NSArray array];
+</span><span class='line'>
+</span><span class='line'>NSLog(@"arr1 = %p, arr2 = %p, arr3 = %p, arr4 = %p", arr1, arr2, arr3 , arr4);
+</span><span class='line'>
+</span><span class='line'>NSLog(@"arr1 = %p, arr2 = %p, arr3 = %p, arr4 = %p", &arr1, &arr2, &arr3 , &arr4);</span></code></pre></td></tr></table></div></figure>
+
+
+<p>第一个NSLog打印出来的结果是</p>
+
+<p><code>1、0x7fa868401cd0</code>
+<code>2、0x7fa868401cd0</code>
+<code>3、0x7fa868401cd0</code>
+<code>4、0x7fa868401cd0</code></p>
+
+<p>第二个NSLog打印出来的结果是</p>
+
+<p><code>1、0x7fff5d1aab18</code>
+<code>2、0x7fff5d1aab10</code>
+<code>3、0x7fff5d1aab08</code>
+<code>4、0x7fff5d1aab00</code></p>
+
+<p>会发现，为什么第一个地址是完全一样的，而第二个地址各自不一样</p>
+
+<p><code>这是苹果系统中的一个优化：因为[[NSArray alloc] init]和[NSArray array]都是初始化一个不可变数组，这个数组为空，因此苹果将空的不可变数组做了优化，开辟了一个空间，所有的不可变数组都指向这里，第二个NSLog是打印的arr1 arr2 arr3 arr4的地址，这表示的是这几个变量分配的内存地址，而不是NSArray分配的地址</code></p>
+
+<p><code>如果将NSArray改成NSMutableArray，然后打印出来，则会发现四个地址又都不一样了，这是因为不可变数组的内容可能有多个，因此每一个都开辟了新的空间</code></p>
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style addthis_16x16_style">
+	
+	
+	
+	<a class="addthis_button_twitter"></a>
+	
+	
+	
+	<a class="addthis_button_compact"></a>
+	<a class="addthis_counter addthis_bubble_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid="></script>
+</div>
+
+
+</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Joy Long
+
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a></footer>
+			<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>

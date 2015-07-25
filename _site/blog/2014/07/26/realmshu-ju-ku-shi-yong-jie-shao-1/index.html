@@ -1,0 +1,419 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Realm数据库使用介绍 - 代码萝卜</title>
+	<meta name="author" content="Joy Long">
+
+	
+	<meta name="description" content="Realm数据库使用介绍 1.背景介绍 Realm是新出的移动端数据库，可以运行在手机、平板和可穿戴设备之上，其目标是取代CoreData和SQLite数据库。 Realm由YCombinator孵化的创业公司Realm制作，官网是http://realm.io/ 目前支持 iOS 平台，提供 &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="代码萝卜" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://happyingly.github.io/blog/2014/07/26/realmshu-ju-ku-shi-yong-jie-shao-1/">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//libs.useso.com/js/jquery/1.7.2/jquery.min.js"></script>
+	<link href='http://fonts.useso.com/css?family=Open+Sans:400italic,400,700' rel='stylesheet' type='text/css'>
+	
+</head>
+
+<script type="text/javascript">
+
+function addBlankTargetForLinks () {
+
+  $('a[href^="http"]').each(function(){
+
+      $(this).attr('target', '_blank');
+
+  });
+
+}
+
+$(document).bind('DOMNodeInserted', function(event) {
+
+  addBlankTargetForLinks();
+
+});
+
+</script>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">	
+	<script src="/javascripts/md5.js"></script>
+	<script type="text/javascript">
+		document.write("<img src='http://www.gravatar.com/avatar/" + MD5("joylong.ly@gmail.com") + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+	</script>
+</div>
+<h1><a href="/">代码萝卜</a></h1>
+<p class="subtitle">Joy's coding life.</p>
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">首页Home</a></li>
+    <li><a href="/blog/categories/">分类Categories</a></li>
+    <li><a href="/blog/archives">归档Archives</a></li>
+    <li><a href="/blog/aboutme.html">关于About</a></li>
+</ul></nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+</nav>
+
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">Realm数据库使用介绍</h1>
+	<div class="entry-content" itemprop="articleBody"><h2>1.背景介绍</h2>
+
+<p>Realm是新出的移动端数据库，可以运行在手机、平板和可穿戴设备之上，其目标是取代CoreData和SQLite数据库。</p>
+
+<p>Realm由YCombinator孵化的创业公司Realm制作，官网是<a href="http://realm.io/">http://realm.io/</a></p>
+
+<p>目前支持 iOS 平台，提供 Swift 和 Objective-C的双支持</p>
+
+<h2>2.如何安装</h2>
+
+<h5>传统方式</h5>
+
+<p>1、<a href="http://static.realm.io/downloads/cocoa/latest">点击下载最新版Realm</a></p>
+
+<p>2、把Realm.framework拖到工程中，添加进去，确保这个framework是存在于你的项目中而不是只链接了引用</p>
+
+<p>3、添加依赖库libc++.dylib</p>
+
+<h5>CocoaPods方式</h5>
+
+<p>1、在podfile中增加pod &ldquo;Realm&rdquo;</p>
+
+<p>2、运行<code>pod install</code></p>
+
+<p>3、打开<code>.xcworkspace</code>来运行你的项目</p>
+
+<h2>3.使用介绍</h2>
+
+<h3>1、Model</h3>
+
+<p>Realm的数据Model是RLMObject的子类，添加相关的属性只需要直接用<code>@property NSString *name;</code>即可
+,和其他NSObject一样，你也可以直接添加一些方法和协议并且直接用。</p>
+
+<p>但是Realm的model是线程限制的。这意味着这个Model只能在创建它的线程中使用</p>
+
+<p>Realm忽略了OC中属性的nonatomic/atomic/strong/copy/weak等，增加属性的时候也不需要加nonatomic之类，如果你加了，那么这些属性特征将会在RLMObject添加到realm时生效</p>
+
+<p>举个例子，假设一个小狗有一个名字，那么这个小狗的Model就是这样</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>// Dog 
+</span><span class='line'>@interface Dog : RLMObject
+</span><span class='line'>
+</span><span class='line'>@property NSString *name;             // 狗的名字
+</span><span class='line'>
+</span><span class='line'>@end
+</span><span class='line'>
+</span><span class='line'>RLM_ARRAY_TYPE(Dog)
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>2、关系</h3>
+
+<p>多个Model之间可以有关系，譬如一对一，一对多，多对多</p>
+
+<p>假设一个小狗不但有自己的名字，每只小狗还有自己的主人，那么就在Model中加入主人，只需要作为property加入即可。</p>
+
+<p>而一个人可以拥有多条小狗，直接在Person的model中添加<code>@property RLMArray&lt;Dog&gt; *dogs;</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>// Dog 
+</span><span class='line'>@interface Dog : RLMObject
+</span><span class='line'>
+</span><span class='line'>@property NSString *name;             // 狗的名字
+</span><span class='line'>@property NSString *color;            // 狗的毛色
+</span><span class='line'>@property Person *owner;          // 狗的主人，一对一
+</span><span class='line'>
+</span><span class='line'>@end
+</span><span class='line'>
+</span><span class='line'>RLM_ARRAY_TYPE(Dog)
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>// Person
+</span><span class='line'>@interface Person : RLMObject 
+</span><span class='line'>
+</span><span class='line'>@property NSString *name;         // 人名
+</span><span class='line'>@property RLMArray&lt;Dog&gt; *dogs;      // 拥有的狗，表示可以拥有多条狗
+</span><span class='line'>@property RLMArray&lt;House&gt; *houses;  // 拥有的房子
+</span><span class='line'>
+</span><span class='line'>@end
+</span><span class='line'>
+</span><span class='line'>RLM_ARRAY_TYPE(Person)
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h5>具体使用如下</h5>
+
+<p><strong>一对一</strong></p>
+
+<pre><code>Person *xiaoxin = [[Person alloc] init];
+Dog *dog = [[Dog alloc] init];
+dog.name = @"littlewhite";
+dog.color = @"white";
+dog.owner = xiaoxin;  // 设置小白的主人为小新
+</code></pre>
+
+<p><strong>一对多</strong></p>
+
+<pre><code>// 获取所有毛色中含有白色的小狗
+RLMArray *someDogs = [Dog objectsWhere:@"color contains 'white'"];
+
+xiaoxin.dogs = someDogs;
+[xiaoxin.dogs addObject:dog];
+</code></pre>
+
+<p>注意：RLMArray 属性意味着赋值时复制，property直接赋值将赋值对象的引用。</p>
+
+<h3>3、具体操作</h3>
+
+<h4>3.1、增删改如何实现</h4>
+
+<p>一个对象的增删改都可以通过<code>beginWriteTransaction</code> <code>commitWriteTransaction</code>来实现</p>
+
+<p>因为Realm采用的MVCC结构，读事务不会因为写事务正在执行而阻塞</p>
+
+<p>因为model不能在线程中共享，要使用只能先添加到Realm中,只要使用相同的Realm数据库，就可以在多个线程中共享数据</p>
+
+<p>如下：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>// 创建对象
+</span><span class='line'>Person *author = [[Person alloc] init];
+</span><span class='line'>author.name    = @"David Foster Wallace";
+</span><span class='line'>
+</span><span class='line'>// 获取数据库
+</span><span class='line'>RLMRealm *realm = [RLMRealm defaultRealm];
+</span><span class='line'>
+</span><span class='line'>// 添加到数据库
+</span><span class='line'>[realm beginWriteTransaction];
+</span><span class='line'>[realm addObject:author];
+</span><span class='line'>[realm commitWriteTransaction];</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>3.2、查询</h4>
+
+<p>调用查询语句之后得到的结果是存储这RLMObject数据的RLMArray类型的数组，RLMArray其他特性和NSArray一样</p>
+
+<p>如下，要查询数据库中存储的所有狗，只需要调用Dog这个Model的allObject方法</p>
+
+<pre><code>RLMArray *dogs = [Dog allObjects];
+</code></pre>
+
+<p>但是上述的查询是在默认数据库中执行，要是想指定一个数据库，就需要</p>
+
+<pre><code>// 获得指定的数据库 
+RLMRealm *petsRealm = [RLMRealm realmWithPath:@"pets.realm"]; 
+// 从这个数据库中查询所有的小狗
+RLMArray *otherDogs = [Dog allObjectsInRealm:petsRealm];
+</code></pre>
+
+<h5>3.2.1、条件查询</h5>
+
+<p>可以使用<code>[RLMObject objectsWhere:]</code>直接写查询条件，也可以使用<code>NSPredicate</code></p>
+
+<pre><code>// 使用ObjectWhere:做查询条件
+RLMArray *tanDogs = [Dog objectsWhere:@"color = 'tan' AND name BEGINSWITH 'B'"];
+
+// 使用NSPredicate也有同样的效果
+NSPredicate *pred = [NSPredicate predicateWithFormat:@"color = %@ AND name BEGINSWITH %@", @"tan", @"B"];
+RLMArray *tanDogs2 = [Dog objectsWithPredicate:pred];
+</code></pre>
+
+<h4>3.3、结果排序</h4>
+
+<p>结果排序非常简单，使用RLMArray的方法arraySortedByProperty:ascending: 即可</p>
+
+<p>property中输入要排序的字段名</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>// 指定一个排序的字段名，默认是升序
+</span><span class='line'>RLMArray *sortedDogs = [[Dog objectsWhere:@"color = 'tan' AND name BEGINSWITH 'B'"]
+</span><span class='line'>                    arraySortedByProperty:@"name" ascending:YES];</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>3.4、链式查询</h4>
+
+<p>就是说如果用一些条件已经查询出一个RLMArray数组，还可以继续用这个数组进行条件查询</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>RLMArray *tanDogs = [Dog objectsWhere:@"color = 'tan'"];
+</span><span class='line'>RLMArray *tanDogsWithBNames = [tanDogs objectsWhere:@"name BEGINSWITH 'B'"];</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>4、Realm数据库</h3>
+
+<p>默认的Realm数据库可以通过<code>[RLMRealm defaultRealm]</code>获得，默认的数据库保存在documents目录下，名字为default.realm， 写事务将自动写入磁盘</p>
+
+<h4>4.1、使用内存中的默认数据库</h4>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[RLMRealm useInMemoryDefaultRealm]; 
+</span><span class='line'>RLMRealm *realm = [RLMRealm defaultRealm]; // 只能在useInMemoryDefaultRealm之后调用</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这个只对默认数据库有效，而且如果在内存中使用数据库，将无法存储RLMObject,这意味着在app运行中都不能保存数据，但是这个对访问复杂数据很有用，避免了磁盘开销</p>
+
+<h4>4.2、其他数据库</h4>
+
+<p>还可以使用<code>[RLMRealm realmWithPath:]</code> <code>[RLMRealm realmWithPath:readOnly:error:]</code>来获得别的数据库</p>
+
+<h4>4.3、线程间使用Realm数据库</h4>
+
+<p>要在多个线程间访问同一个数据库，可以用<code>[RLMRealm defaultRealm]</code> <code>[RLMRealm realmWithPath:]</code> 或者 <code>[RLMRealm realmWithPath:readOnly:error:]</code>在每一个线程中获得相应的数据库对象。只要地址用的对，数据库肯定是同一个，但是<code>不要在线程间共享RLMRealm对象</code>。有多个Realm对象指向同样的文件地址，这个是没有问题的，甚至可以同一个线程中有多个Realm对象指向同一个文件地址，也是安全的。</p>
+
+<h3>5、通知</h3>
+
+<p>当Realm更新的时候会发出通知，可以注册一个block 来响应通知</p>
+
+<pre><code>self.token = [realm addNotificationBlock:^(NSString *note, RLMRealm *realm) {
+    [muViewController updateUI];
+}];
+</code></pre>
+
+<p>还可以用<code>[Realm removeNotificationBlock:]</code>移除block</p>
+
+<h3>6、后台操作</h3>
+
+<p>Realm在大数据写入上非常有效率。事务可以使用GCD在后台实施，从而避免阻塞主线程。RLMRealm不是县城安全的，也不能在线程中共享，因此当需要读写数据库时，必须在每个线程或调度队列里获取一个RLMRealm实例。</p>
+
+<p>下面是一个后台插入百万级数据的例子</p>
+
+<pre><code>dispatch_async(queue, ^{
+    RLMRealm *realm = [RLMRealm defaultRealm];
+
+    for (NSInteger idx1 = 0; idx1 &lt; 1000; idx1++) {
+        [realm beginWriteTransaction];
+        for (NSInteger idx2 = 0; idx2 &lt; 1000; idx2++) {
+            [Person createInRealm:realm
+                    withObject:@{@"name : [self randomString],
+                                 @"birthdate" : [self randomDate]}];
+        }
+        [realm commitWriteTransaction];
+    }
+});
+</code></pre>
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style addthis_16x16_style">
+	
+	
+	
+	<a class="addthis_button_twitter"></a>
+	
+	
+	
+	<a class="addthis_button_compact"></a>
+	<a class="addthis_counter addthis_bubble_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid="></script>
+</div>
+
+
+</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Joy Long
+
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a></footer>
+			<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>

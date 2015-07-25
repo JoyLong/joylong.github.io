@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: xcode | 代码萝卜]]></title>
+  <link href="http://happyingly.github.io/blog/categories/xcode/atom.xml" rel="self"/>
+  <link href="http://happyingly.github.io/"/>
+  <updated>2015-07-25T21:43:56+08:00</updated>
+  <id>http://happyingly.github.io/</id>
+  <author>
+    <name><![CDATA[Joy Long]]></name>
+    <email><![CDATA[joylong.ly@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[好用的xcode插件收集]]></title>
+    <link href="http://happyingly.github.io/blog/2014/08/07/good-xcode-plugin/"/>
+    <updated>2014-08-07T00:46:20+08:00</updated>
+    <id>http://happyingly.github.io/blog/2014/08/07/good-xcode-plugin</id>
+    <content type="html"><![CDATA[<p>xcode配插件才是真正的利器</p>
+
+<p>现在弄一篇博文专门存档用</p>
+
+<h3>1、<a href="https://github.com/omz/ColorSense-for-Xcode">ColorSense for Xcode</a></h3>
+
+<h5>输入色值的时候就会显示对应的颜色</h5>
+
+<h3>2、<a href="https://github.com/ksuther/KSImageNamed-Xcode">KSImageNamed-Xcode</a></h3>
+
+<h5>图片检索显示</h5>
+
+<h3>3、<a href="https://github.com/FuzzyAutocomplete/FuzzyAutocompletePlugin">Fuzzy Autocomplete for Xcode</a></h3>
+
+<h5>方法名属性名等的模糊匹配</h5>
+
+<p>目前感觉好用的就这些</p>
+
+<p>以后有新的再补充</p>
+]]></content>
+  </entry>
+  
+</feed>

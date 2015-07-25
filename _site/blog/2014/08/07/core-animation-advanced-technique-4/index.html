@@ -1,0 +1,1001 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Core Animation Advanced Technique 学习笔记(4) - 代码萝卜</title>
+	<meta name="author" content="Joy Long">
+
+	
+	<meta name="description" content="Core Animation Advanced Technique 学习笔记(4) 第一部分：下面的图层 5.变换（Transforms） 5.1、仿射变换 5.1.1、仿射变换介绍 之前的例子里有一个钟表的指针，使用了UIView的transform属性旋转了指针 &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="代码萝卜" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://happyingly.github.io/blog/2014/08/07/core-animation-advanced-technique-4/">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//libs.useso.com/js/jquery/1.7.2/jquery.min.js"></script>
+	<link href='http://fonts.useso.com/css?family=Open+Sans:400italic,400,700' rel='stylesheet' type='text/css'>
+	
+</head>
+
+<script type="text/javascript">
+
+function addBlankTargetForLinks () {
+
+  $('a[href^="http"]').each(function(){
+
+      $(this).attr('target', '_blank');
+
+  });
+
+}
+
+$(document).bind('DOMNodeInserted', function(event) {
+
+  addBlankTargetForLinks();
+
+});
+
+</script>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">	
+	<script src="/javascripts/md5.js"></script>
+	<script type="text/javascript">
+		document.write("<img src='http://www.gravatar.com/avatar/" + MD5("joylong.ly@gmail.com") + "?s=160' alt='Profile Picture' style='width: 160px;' />");
+	</script>
+</div>
+<h1><a href="/">代码萝卜</a></h1>
+<p class="subtitle">Joy's coding life.</p>
+<nav id="main-nav"><ul class="main">
+    <li><a href="/">首页Home</a></li>
+    <li><a href="/blog/categories/">分类Categories</a></li>
+    <li><a href="/blog/archives">归档Archives</a></li>
+    <li><a href="/blog/aboutme.html">关于About</a></li>
+</ul></nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+</nav>
+
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">Core Animation Advanced Technique 学习笔记(4)</h1>
+	<div class="entry-content" itemprop="articleBody"><h1>第一部分：下面的图层</h1>
+
+<h2>5.变换（Transforms）</h2>
+
+<h3>5.1、仿射变换</h3>
+
+<h4>5.1.1、仿射变换介绍</h4>
+
+<p>之前的例子里有一个钟表的指针，使用了UIView的<code>transform</code>属性旋转了指针</p>
+
+<p>UIView的transform属性是CGAffineTransform类型，用于在二维空间做<code>旋转</code>，<code>缩放</code>和<code>平移</code>。</p>
+
+<p>CGAffineTransform是一个可以和二维空间向量（例如CGPoint）做乘法变换运算的3X2的矩阵</p>
+
+<p>将CGPoint的每一列和CGAffineTransform矩阵的每一行对应元素相乘再求和，就形成了一个新的CGPoint类型的结果。</p>
+
+<p><strong>但是，CGPoint是1X2的 CGAffineTRansform是3X2的矩阵，没法做矩阵乘法，于是必须要给矩阵填充一些值，这些值主要是让矩阵做乘法，但是不影响运算结果，也不会发生变化</strong></p>
+
+<p>如下图：</p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.1.png" alt="Mou icon" /></p>
+
+<p>当对图层应用变换矩阵，图层矩形内的每一个点都被相应地做变换，从而形成一个新的四边形的形状。</p>
+
+<p>CGAffineTransform中的“仿射”的意思是无论变换矩阵用什么值，图层中平行的两条线在变换之后任然保持平行，CGAffineTransform可以做出任意符合规则的变换，</p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.2.png" alt="Mou icon" /></p>
+
+<h4>5.1.2、创建CGAffineTransform</h4>
+
+<p>Core Graphics提供了一系列函数，让毫无数学基础的开发者能够简单地做一些变换。</p>
+
+<p>创建了一个CGAffineTransform实例可以用如下几个函数：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>CGAffineTransformMakeRotation(CGFloat angle)  // 旋转一个角度
+</span><span class='line'>CGAffineTransformMakeScale(CGFloat sx, CGFloat sy) // 缩放
+</span><span class='line'>CGAffineTransformMakeTranslation(CGFloat tx, CGFloat ty) // 平移，每个点都平移一定距离</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>小例子：把一个图旋转45度</strong></p>
+
+<p>UIView可以通过设置transform属性做变换，但实际上它只是封装了内部图层的变换。</p>
+
+<p>CALayer同样也有一个transform属性，但它的类型是CATransform3D，而不是CGAffineTransform。</p>
+
+<p>CALayer对应于UIView的transform属性叫做<code>affineTransform</code>，</p>
+
+<p>下面的例子是使用affineTransform对图层旋转45度</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@interface ViewController ()
+</span><span class='line'>
+</span><span class='line'>@property (nonatomic, weak) IBOutlet UIView *layerView;
+</span><span class='line'>
+</span><span class='line'>@end
+</span><span class='line'>
+</span><span class='line'>@implementation ViewController
+</span><span class='line'>
+</span><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    // 旋转图层45度(这里用的是弧度)
+</span><span class='line'>    CGAffineTransform transform = CGAffineTransformMakeRotation(M_PI_4);
+</span><span class='line'>    self.layerView.layer.affineTransform = transform;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>@end</span></code></pre></td></tr></table></div></figure>
+
+
+<p>注：上面旋转设置的都是旋转弧度，可以用以下的宏做换算：</p>
+
+<pre><code>#define RADIANS_TO_DEGREES(x) ((x)/M_PI*180.0) 
+#define DEGREES_TO_RADIANS(x) ((x)/180.0*M_PI)
+</code></pre>
+
+<h4>5.1.3、组合变换（Combining Transforms）</h4>
+
+<p>旋转，缩放和平移，我们可能不止对图片做一个操作，可能会同时都变换，因此需要创建一个CGAffineTransform类型的空值，矩阵论中称作单位矩阵</p>
+
+<p>Core Graphics同样也提供了一个方便的常量：</p>
+
+<pre><code>CGAffineTransformIdentity
+</code></pre>
+
+<p>如果需要混合两个已经存在的变换矩阵，就可以使用如下方法，在两个变换的基础上创建一个新的变换：</p>
+
+<pre><code>CGAffineTransformConcat(CGAffineTransform t1, CGAffineTransform t2);
+</code></pre>
+
+<p><strong>小例子，先缩小50%，再旋转30度，最后向右移动200个像素</strong></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    // 创建一个新的变换，单位矩阵
+</span><span class='line'>    CGAffineTransform transform = CGAffineTransformIdentity; 
+</span><span class='line'>    // 缩小50%
+</span><span class='line'>    transform = CGAffineTransformScale(transform, 0.5, 0.5); 
+</span><span class='line'>    // 旋转30度
+</span><span class='line'>    transform = CGAffineTransformRotate(transform, M_PI / 180.0 * 30.0); 
+</span><span class='line'>    // 平移200点
+</span><span class='line'>    transform = CGAffineTransformTranslate(transform, 200, 0);
+</span><span class='line'>    // 应用到图层上
+</span><span class='line'>    self.layerView.layer.affineTransform = transform;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>5.1.4、剪裁变换(Shear Transform)</h4>
+
+<p>Core Graphics为你提供了计算变换矩阵的一些方法，所以很少需要直接设置CGAffineTransform的值。</p>
+
+<p>除非需要创建一个斜切的变换，但是Core Graphics并没有提供直接的函数。</p>
+
+<p>斜切变换是仿射变换的第四种类型，较于平移，旋转和缩放并不常用（这也是Core Graphics没有提供相应函数的原因），但有些时候也会很有用。</p>
+
+<p>这个变换的效果如下图</p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.3.png" alt="Mou icon" /></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@implementation ViewController
+</span><span class='line'>
+</span><span class='line'>CGAffineTransform CGAffineTransformMakeShear(CGFloat x, CGFloat y)
+</span><span class='line'>{
+</span><span class='line'>    CGAffineTransform transform = CGAffineTransformIdentity;
+</span><span class='line'>    transform.c = -x;
+</span><span class='line'>    transform.b = y;
+</span><span class='line'>    return transform;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    // 倾斜图层到45度
+</span><span class='line'>    self.layerView.layer.affineTransform = CGAffineTransformMakeShear(1, 0);
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>@end</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>5.2、3D变换</h2>
+
+<h3>5.2.1、3D变换介绍</h3>
+
+<p>Core Graphics实际上是一个2D绘图API，并且CGAffineTransform仅仅对2D变换有效。</p>
+
+<p>之前有提到了zPosition属性，可以用来让图层看起来靠近或远离用户，但是transform属性（CATransform3D类型）可以真正让图层在3D空间内移动或者旋转。</p>
+
+<p>和CGAffineTransform类似，CATransform3D也是一个矩阵，但是和2x3的矩阵不同，CATransform3D是一个可以在3维空间内做变换的4x4的矩阵。</p>
+
+<p>下图是对一个3D点做<code>CATransform3D</code>的矩阵变换</p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.4.png" alt="Mou icon" /></p>
+
+<p>Core Animation提供了一系列的方法用来创建和组合CATransform3D类型的矩阵，和Core Graphics的函数类似，但是3D的平移和旋转多处了一个z参数，并且旋转函数除了angle之外多出了x,y,z三个参数，分别决定了每个坐标轴方向上的旋转：</p>
+
+<pre><code>CATransform3DMakeRotation(CGFloat angle, CGFloat x, CGFloat y, CGFloat z)
+CATransform3DMakeScale(CGFloat sx, CGFloat sy, CGFloat sz) 
+CATransform3DMakeTranslation(Gloat tx, CGFloat ty, CGFloat tz)
+</code></pre>
+
+<p>下图为XYZ轴位置以及相应的旋转</p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.5.png" alt="Mou icon" /></p>
+
+<p>由图所见，绕Z轴的旋转等同于之前二维空间的仿射旋转，但是绕X轴和Y轴的旋转就突破了屏幕的二维空间，并且在用户视角看来发生了倾斜。</p>
+
+<p><strong>绕Y轴旋转图层</strong></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@implementation ViewController
+</span><span class='line'>
+</span><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    //rotate the layer 45 degrees along the Y axis
+</span><span class='line'>    CATransform3D transform = CATransform3DMakeRotation(M_PI_4, 0, 1, 0);
+</span><span class='line'>    self.layerView.layer.transform = transform;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>@end</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.6.png" alt="Mou icon" /></p>
+
+<p>看起来图层并没有被旋转，而是仅仅在水平方向上的一个压缩，这是因为我们在用一个斜向的视角看，而不是透视视角。</p>
+
+<h3>5.2.2、透视投影</h3>
+
+<h4>5.2.2.1、透视投影介绍</h4>
+
+<p>在真实世界中，东西离我们越远看起来就越小</p>
+
+<p>在等距投影中，远处的物体和近处的物体保持同样的缩放比例</p>
+
+<p>为了做一些修正，我们需要引入投影变换（又称作z变换）来对除了旋转之外的变换矩阵做一些修改，Core Animation并没有给我们提供设置透视变换的函数，因此我们需要手动修改矩阵值。</p>
+
+<p>CATransform3D的透视效果通过矩阵中m34的值来控制。</p>
+
+<p><strong>m34用于按比例缩放X和Y的值来计算到底要离视角多远。</strong></p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.7.png" alt="Mou icon" /></p>
+
+<p>m34的默认值是0，我们可以通过设置m34为(-1.0 / d)来应用透视效果，d代表了视角相机和屏幕之间的距离，以像素为单位，那应该如何计算这个距离呢？大概估算一个就行了。</p>
+
+<p>因为视角相机实际上并不存在，所以可以根据屏幕上的显示效果自由决定它放置的位置。通常500-1000就已经很好了，但对于特定的图层有时候更小后者更大的值会看起来更舒服，减少距离的值会增强透视效果，所以一个非常微小的值会让它看起来更加失真，然而一个非常大的值会让它基本失去透视效果。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@implementation ViewController
+</span><span class='line'>
+</span><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    // 创建一个新的transform
+</span><span class='line'>    CATransform3D transform = CATransform3DIdentity;
+</span><span class='line'>    // 应用透视
+</span><span class='line'>    transform.m34 = - 1.0 / 500.0;
+</span><span class='line'>    // 绕Y轴旋转45度
+</span><span class='line'>    transform = CATransform3DRotate(transform, M_PI_4, 0, 1, 0);
+</span><span class='line'>    // 应用到图层上
+</span><span class='line'>    self.layerView.layer.transform = transform;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>@end</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.8.png" alt="Mou icon" /></p>
+
+<h4>5.2.2.2、消亡点</h4>
+
+<p>当在透视角度绘图的时候，远离相机视角的物体将会变小变远，当远离到一个极限距离，它们可能就缩成了一个点，于是所有的物体最后都汇聚消失在同一个点。</p>
+
+<p>在现实中，这个点通常是视图的中心，于是为了在应用中创建拟真效果的透视，这个店应该聚在屏幕中点，或者至少是包含所有3D对象的视图中点。</p>
+
+<p>Core Animation定义了这个点位于变换图层的anchorPoint。这就是说，当图层发生变换时，这个点永远位于图层变换之前anchorPoint的位置。</p>
+
+<p>当改变一个图层的position，你也改变了它的消亡点，做3D变换的时候要时刻记住，当你视图通过调整m34来让它更加有3D效果，应该首先把它放置于屏幕中央，然后通过平移来把它移动到指定位置（而不是直接改变它的position），这样所有的3D图层都共享一个消亡点。</p>
+
+<h4>5.2.2.3、sublayerTransform</h4>
+
+<p>如果有多个视图或者图层，每个都要做3D变换，那就需要分别设置相同的m34值，并且确保在变换之前都在屏幕中央共享同一个position。</p>
+
+<p>CALayer有一个属性叫做<code>sublayerTransform</code>。它也是CATransform3D类型，但和对一个图层的变换不同，它影响到所有的子图层。</p>
+
+<p>这意味着你可以一次性对包含这些图层的容器做变换，于是所有的子图层都自动继承了这个变换方法。</p>
+
+<p>通过在一个地方设置透视变换会很方便，同时它会带来另一个显著的优势：</p>
+
+<pre><code>消亡点被设置在容器图层的中点，从而不需要再对子图层分别设置了。
+
+这意味着你可以随意使用position和frame来放置子图层，而不需要把它们放置在屏幕中点，然后为了保证统一的消亡点用变换来做平移。
+</code></pre>
+
+<p><strong>小例子：应用sublayerTransform</strong></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@interface ViewController ()
+</span><span class='line'>
+</span><span class='line'>@property (nonatomic, weak) IBOutlet UIView *containerView;
+</span><span class='line'>@property (nonatomic, weak) IBOutlet UIView *layerView1;
+</span><span class='line'>@property (nonatomic, weak) IBOutlet UIView *layerView2;
+</span><span class='line'>
+</span><span class='line'>@end
+</span><span class='line'>
+</span><span class='line'>@implementation ViewController
+</span><span class='line'>
+</span><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    //apply perspective transform to container
+</span><span class='line'>    CATransform3D perspective = CATransform3DIdentity;
+</span><span class='line'>    perspective.m34 = - 1.0 / 500.0;
+</span><span class='line'>    self.containerView.layer.sublayerTransform = perspective;
+</span><span class='line'>    //rotate layerView1 by 45 degrees along the Y axis
+</span><span class='line'>    CATransform3D transform1 = CATransform3DMakeRotation(M_PI_4, 0, 1, 0);
+</span><span class='line'>    self.layerView1.layer.transform = transform1;
+</span><span class='line'>    //rotate layerView2 by 45 degrees along the Y axis
+</span><span class='line'>    CATransform3D transform2 = CATransform3DMakeRotation(-M_PI_4, 0, 1, 0);
+</span><span class='line'>    self.layerView2.layer.transform = transform2;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.9.png" alt="Mou icon" /></p>
+
+<h4>5.2.2.4、背面</h4>
+
+<p>既然可以在3D场景下旋转图层，那么旋转180度将会把图层完全旋转一个半圈，于是完全背对了相机视角。</p>
+
+<p>视图的背面，就是一个镜像对称的图片</p>
+
+<p>CALayer有一个叫做<code>doubleSided</code>的属性来控制图层的背面是否要被绘制。这是一个BOOL类型，默认为YES，如果设置为NO，那么当图层正面从相机视角消失的时候，它将不会被绘制。</p>
+
+<h4>5.2.2.5、扁平化图层</h4>
+
+<p>如果对包含已经做过变换的图层的图层做反方向的变换将会发什么什么呢？是不是有点困惑？</p>
+
+<p>如果内部图层相对外部图层做了相反的变换（这里是绕Z轴的旋转），那么按照逻辑这两个变换将被相互抵消。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@interface ViewController ()
+</span><span class='line'>
+</span><span class='line'>@property (nonatomic, weak) IBOutlet UIView *outerView;
+</span><span class='line'>@property (nonatomic, weak) IBOutlet UIView *innerView;
+</span><span class='line'>
+</span><span class='line'>@end
+</span><span class='line'>
+</span><span class='line'>@implementation ViewController
+</span><span class='line'>
+</span><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    // 外层旋转45度
+</span><span class='line'>    CATransform3D outer = CATransform3DMakeRotation(M_PI_4, 0, 0, 1);
+</span><span class='line'>    self.outerView.layer.transform = outer;
+</span><span class='line'>    // 内层旋转-45度
+</span><span class='line'>    CATransform3D inner = CATransform3DMakeRotation(-M_PI_4, 0, 0, 1);
+</span><span class='line'>    self.innerView.layer.transform = inner;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>@end</span></code></pre></td></tr></table></div></figure>
+
+
+<p>代码执行后的样子：</p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.10.png" alt="Mou icon" /></p>
+
+<p>修改代码，让内外两个视图绕Y轴旋转而不是Z轴，再加上透视效果，以便我们观察。注意不能用sublayerTransform属性，因为内部的图层并不直接是容器图层的子图层，所以这里分别对图层设置透视变换</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    //rotate the outer layer 45 degrees
+</span><span class='line'>    CATransform3D outer = CATransform3DIdentity;
+</span><span class='line'>    outer.m34 = -1.0 / 500.0;
+</span><span class='line'>    outer = CATransform3DRotate(outer, M_PI_4, 0, 1, 0);
+</span><span class='line'>    self.outerView.layer.transform = outer;
+</span><span class='line'>    //rotate the inner layer -45 degrees
+</span><span class='line'>    CATransform3D inner = CATransform3DIdentity;
+</span><span class='line'>    inner.m34 = -1.0 / 500.0;
+</span><span class='line'>    inner = CATransform3DRotate(inner, -M_PI_4, 0, 1, 0);
+</span><span class='line'>    self.innerView.layer.transform = inner;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>预期的效果如下</p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.11.png" alt="Mou icon" /></p>
+
+<p>相反，我们看到的结果如下图所示。</p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.12.png" alt="Mou icon" /></p>
+
+<p>这是由于Core Animation图层存在于3D空间之内，但它们并不都存在同一个3D空间。每个图层的3D场景其实是扁平化的，当你从正面观察一个图层，看到的实际上由子图层创建的想象出来的3D场景，但当你倾斜这个图层，你会发现实际上这个3D场景仅仅是被绘制在图层的表面。</p>
+
+<p>当你在玩一个3D游戏，实际上仅仅是把屏幕做了一次倾斜，或许在游戏中可以看见有一面墙在你面前，但是倾斜屏幕并不能够看见墙里面的东西。所有场景里面绘制的东西并不会随着你观察它的角度改变而发生变化；图层也是同样的道理。</p>
+
+<p>这使得用Core Animation创建非常复杂的3D场景变得十分困难。</p>
+
+<p>你不能够使用图层树去创建一个3D结构的层级关系&ndash;在相同场景下的任何3D表面必须和同样的图层保持一致，这是因为每个的父视图都把它的子视图扁平化了。</p>
+
+<p>CALayer有一个叫做<code>CATransformLayer</code>的子类来解决这个问题。</p>
+
+<h2>5.3、固体对象</h2>
+
+<h3>5.3.1、创建一个立方体</h3>
+
+<p>现在来试着创建一个固态的3D对象（实际上是一个技术上所谓的空洞对象，但它以固态呈现）。我们用六个独立的视图来构建一个立方体的各个面。</p>
+
+<p><strong>6个View创建一个立方体</strong></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@interface ViewController ()
+</span><span class='line'>
+</span><span class='line'>@property (nonatomic, weak) IBOutlet UIView *containerView;
+</span><span class='line'>@property (nonatomic, strong) IBOutletCollection(UIView) NSArray *faces;
+</span><span class='line'>
+</span><span class='line'>@end
+</span><span class='line'>
+</span><span class='line'>@implementation ViewController
+</span><span class='line'>
+</span><span class='line'>- (void)addFace:(NSInteger)index withTransform:(CATransform3D)transform
+</span><span class='line'>{
+</span><span class='line'>    // 获取立方体的面并添加到容器上
+</span><span class='line'>    UIView *face = self.faces[index];
+</span><span class='line'>    [self.containerView addSubview:face];
+</span><span class='line'>    // 在容器里居中这些面
+</span><span class='line'>    CGSize containerSize = self.containerView.bounds.size;
+</span><span class='line'>    face.center = CGPointMake(containerSize.width / 2.0, containerSize.height / 2.0);
+</span><span class='line'>    // 应用这些变换
+</span><span class='line'>    face.layer.transform = transform;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    // 设置容器子图层的变换
+</span><span class='line'>    CATransform3D perspective = CATransform3DIdentity;
+</span><span class='line'>    perspective.m34 = -1.0 / 500.0;
+</span><span class='line'>    self.containerView.layer.sublayerTransform = perspective;
+</span><span class='line'>    // 增加立方体面1
+</span><span class='line'>    CATransform3D transform = CATransform3DMakeTranslation(0, 0, 100);
+</span><span class='line'>    [self addFace:0 withTransform:transform];
+</span><span class='line'>    // 增加立方体面2
+</span><span class='line'>    transform = CATransform3DMakeTranslation(100, 0, 0);
+</span><span class='line'>    transform = CATransform3DRotate(transform, M_PI_2, 0, 1, 0);
+</span><span class='line'>    [self addFace:1 withTransform:transform];
+</span><span class='line'>    // 增加立方体面3
+</span><span class='line'>    transform = CATransform3DMakeTranslation(0, -100, 0);
+</span><span class='line'>    transform = CATransform3DRotate(transform, M_PI_2, 1, 0, 0);
+</span><span class='line'>    [self addFace:2 withTransform:transform];
+</span><span class='line'>    // 增加立方体面4
+</span><span class='line'>    transform = CATransform3DMakeTranslation(0, 100, 0);
+</span><span class='line'>    transform = CATransform3DRotate(transform, -M_PI_2, 1, 0, 0);
+</span><span class='line'>    [self addFace:3 withTransform:transform];
+</span><span class='line'>    // 增加立方体面5
+</span><span class='line'>    transform = CATransform3DMakeTranslation(-100, 0, 0);
+</span><span class='line'>    transform = CATransform3DRotate(transform, -M_PI_2, 0, 1, 0);
+</span><span class='line'>    [self addFace:4 withTransform:transform];
+</span><span class='line'>    // 增加立方体面6
+</span><span class='line'>    transform = CATransform3DMakeTranslation(0, 0, -100);
+</span><span class='line'>    transform = CATransform3DRotate(transform, M_PI, 0, 1, 0);
+</span><span class='line'>    [self addFace:5 withTransform:transform];
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>@end</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.13.png" alt="Mou icon" /></p>
+
+<p>只有一面根本看不出来是立方体</p>
+
+<p>所以我们旋转一下</p>
+
+<p>但是，这个立方体是6个面组成的，正常逻辑就是旋转立方体，这样就必须要旋转6个面</p>
+
+<p>我们还有另外一个简单的方法：调整容器视图的<code>sublayerTransform</code>去旋转照相机</p>
+
+<p>为<code>containerView</code>的layer的<code>perspective</code>增加两行代码</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>// 绕X轴旋转45度
+</span><span class='line'>perspective = CATransform3DRotate(perspective, -M_PI_4, 1, 0, 0);  
+</span><span class='line'>// 绕Y轴旋转45度
+</span><span class='line'>perspective = CATransform3DRotate(perspective, -M_PI_4, 0, 1, 0);</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.14.png" alt="Mou icon" /></p>
+
+<h3>5.3.2、为立方体加上光亮和阴影</h3>
+
+<p>现在它看起来更像是一个立方体了，但是每个面之间的连接处很难分辨，这是因为没有阴影和光照，显得很不真实。</p>
+
+<p>如果想让立方体看起来更加真实，需要自己做一个阴影效果。</p>
+
+<p>可以通过改变每个面的背景颜色或者直接用带光亮效果的图片来调整。</p>
+
+<p>如果要动态创建光线效果，可以根据每个视图的方向应用不同的alpha值做出半透明的阴影图层，但为了计算阴影图层的不透明度，就需要得到每个面垂直于表面的向量，然后根据一个你自己假设的光源来计算出两个向量叉乘结果。</p>
+
+<p>叉乘代表了光源和图层之间的角度，从而决定了它有多大程度上的光亮。</p>
+
+<p><strong>下面的例子用GLKit框架来做向量的计算（你需要引入GLKit库来运行代码），每个面的CATransform3D都被转换成GLKMatrix4，然后通过GLKMatrix4GetMatrix3函数得出一个3×3的旋转矩阵。这个旋转矩阵指定了图层的方向，然后可以用它来得到这个垂直与表面的向量的值。</strong></p>
+
+<p>试着调整<code>LIGHT_DIRECTION</code>和<code>AMBIENT_LIGHT</code>的值来切换光线效果</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#import "ViewController.h" 
+</span><span class='line'>#import &lt;QuartzCore/QuartzCore.h&gt; 
+</span><span class='line'>#import &lt;GLKit/GLKit.h&gt;
+</span><span class='line'>
+</span><span class='line'>#define LIGHT_DIRECTION 0, 1, -0.5 
+</span><span class='line'>#define AMBIENT_LIGHT 0.5
+</span><span class='line'>
+</span><span class='line'>@interface ViewController ()
+</span><span class='line'>
+</span><span class='line'>@property (nonatomic, weak) IBOutlet UIView *containerView;
+</span><span class='line'>@property (nonatomic, strong) IBOutletCollection(UIView) NSArray *faces;
+</span><span class='line'>
+</span><span class='line'>@end
+</span><span class='line'>
+</span><span class='line'>@implementation ViewController
+</span><span class='line'>
+</span><span class='line'>- (void)applyLightingToFace:(CALayer *)face
+</span><span class='line'>{
+</span><span class='line'>    //add lighting layer
+</span><span class='line'>    CALayer *layer = [CALayer layer];
+</span><span class='line'>    layer.frame = face.bounds;
+</span><span class='line'>    [face addSublayer:layer];
+</span><span class='line'>    //convert the face transform to matrix
+</span><span class='line'>    //(GLKMatrix4 has the same structure as CATransform3D)
+</span><span class='line'>    CATransform3D transform = face.transform;
+</span><span class='line'>    GLKMatrix4 matrix4 = *(GLKMatrix4 *)&transform;
+</span><span class='line'>    GLKMatrix3 matrix3 = GLKMatrix4GetMatrix3(matrix4);
+</span><span class='line'>    //get face normal
+</span><span class='line'>    GLKVector3 normal = GLKVector3Make(0, 0, 1);
+</span><span class='line'>    normal = GLKMatrix3MultiplyVector3(matrix3, normal);
+</span><span class='line'>    normal = GLKVector3Normalize(normal);
+</span><span class='line'>    //get dot product with light direction
+</span><span class='line'>    GLKVector3 light = GLKVector3Normalize(GLKVector3Make(LIGHT_DIRECTION));
+</span><span class='line'>    float dotProduct = GLKVector3DotProduct(light, normal);
+</span><span class='line'>    //set lighting layer opacity
+</span><span class='line'>    CGFloat shadow = 1 + dotProduct - AMBIENT_LIGHT;
+</span><span class='line'>    UIColor *color = [UIColor colorWithWhite:0 alpha:shadow];
+</span><span class='line'>    layer.backgroundColor = color.CGColor;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>- (void)addFace:(NSInteger)index withTransform:(CATransform3D)transform
+</span><span class='line'>{
+</span><span class='line'>    //get the face view and add it to the container
+</span><span class='line'>    UIView *face = self.faces[index];
+</span><span class='line'>    [self.containerView addSubview:face];
+</span><span class='line'>    //center the face view within the container
+</span><span class='line'>    CGSize containerSize = self.containerView.bounds.size;
+</span><span class='line'>    face.center = CGPointMake(containerSize.width / 2.0, containerSize.height / 2.0);
+</span><span class='line'>    // apply the transform
+</span><span class='line'>    face.layer.transform = transform;
+</span><span class='line'>    //apply lighting
+</span><span class='line'>    [self applyLightingToFace:face.layer];
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>- (void)viewDidLoad
+</span><span class='line'>{
+</span><span class='line'>    [super viewDidLoad];
+</span><span class='line'>    //set up the container sublayer transform
+</span><span class='line'>    CATransform3D perspective = CATransform3DIdentity;
+</span><span class='line'>    perspective.m34 = -1.0 / 500.0;
+</span><span class='line'>    perspective = CATransform3DRotate(perspective, -M_PI_4, 1, 0, 0);
+</span><span class='line'>    perspective = CATransform3DRotate(perspective, -M_PI_4, 0, 1, 0);
+</span><span class='line'>    self.containerView.layer.sublayerTransform = perspective;
+</span><span class='line'>    //add cube face 1
+</span><span class='line'>    CATransform3D transform = CATransform3DMakeTranslation(0, 0, 100);
+</span><span class='line'>    [self addFace:0 withTransform:transform];
+</span><span class='line'>    //add cube face 2
+</span><span class='line'>    transform = CATransform3DMakeTranslation(100, 0, 0);
+</span><span class='line'>    transform = CATransform3DRotate(transform, M_PI_2, 0, 1, 0);
+</span><span class='line'>    [self addFace:1 withTransform:transform];
+</span><span class='line'>    //add cube face 3
+</span><span class='line'>    transform = CATransform3DMakeTranslation(0, -100, 0);
+</span><span class='line'>    transform = CATransform3DRotate(transform, M_PI_2, 1, 0, 0);
+</span><span class='line'>    [self addFace:2 withTransform:transform];
+</span><span class='line'>    //add cube face 4
+</span><span class='line'>    transform = CATransform3DMakeTranslation(0, 100, 0);
+</span><span class='line'>    transform = CATransform3DRotate(transform, -M_PI_2, 1, 0, 0);
+</span><span class='line'>    [self addFace:3 withTransform:transform];
+</span><span class='line'>    //add cube face 5
+</span><span class='line'>    transform = CATransform3DMakeTranslation(-100, 0, 0);
+</span><span class='line'>    transform = CATransform3DRotate(transform, -M_PI_2, 0, 1, 0);
+</span><span class='line'>    [self addFace:4 withTransform:transform];
+</span><span class='line'>    //add cube face 6
+</span><span class='line'>    transform = CATransform3DMakeTranslation(0, 0, -100);
+</span><span class='line'>    transform = CATransform3DRotate(transform, M_PI, 0, 1, 0);
+</span><span class='line'>    [self addFace:5 withTransform:transform];
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>@end</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.15.png" alt="Mou icon" /></p>
+
+<h3>5.3.3、处理立方体的点击事件</h3>
+
+<p>目前这个立方体点击了没反应，这不是因为响应事件没被处理，而是在于视图的顺序</p>
+
+<p>之前提过，点击事件的处理由视图在父视图中的顺序决定的，而不是3D空间中的Z轴顺序。</p>
+
+<p>当给立方体添加视图的时候，按照视图/图层顺序来说，4，5，6在3的前面。</p>
+
+<p>即使我们看不见4，5，6的表面（因为被1，2，3遮住了），iOS在事件响应上仍然保持之前的顺序。</p>
+
+<p>当试图点击表面3上的按钮，表面4，5，6截断了点击事件（取决于点击的位置），这就和普通的2D布局在按钮上覆盖物体一样。</p>
+
+<p>你也许认为把<code>doubleSided</code>设置成NO可以解决这个问题，因为它不再渲染视图后面的内容，但实际上并不起作用。</p>
+
+<p>因为背对相机而隐藏的视图仍然会响应点击事件（这和通过设置hidden属性或者设置alpha为0而隐藏的视图不同，那两种方式将不会响应事件）。</p>
+
+<p>所以即使禁止了双面渲染仍然不能解决这个问题（虽然由于性能问题，还是需要把它设置成NO）。</p>
+
+<p>但是有几种正确的方案：</p>
+
+<p><strong>1、把除了表面3的其他视图userInteractionEnabled属性都设置成NO来禁止事件传递。</strong></p>
+
+<p><strong>2、简单通过代码把视图3覆盖在视图6上。</strong></p>
+
+<p><img src="http://github-octopress.qiniudn.com/CoreAnimationAdvancedTechnique5.16.png" alt="Mou icon" /></p>
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style addthis_16x16_style">
+	
+	
+	
+	<a class="addthis_button_twitter"></a>
+	
+	
+	
+	<a class="addthis_button_compact"></a>
+	<a class="addthis_counter addthis_bubble_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid="></script>
+</div>
+
+
+</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Joy Long
+
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a></footer>
+			<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>
